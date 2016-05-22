@@ -10,13 +10,22 @@ THRESHOLD = 2
 EOS = '</s>'
 
 
-def sum_series(n, min_len = 3, max_len = 20, max_digit = 9, plus_sign = True, verbose = True, root = False):
+def sum_series(n, min_len = 2, max_len = 20, max_digit = 9, plus_sign = True, verbose = True, root = False):
 
 	pairs = []
 	seen = set()
+	lengths = []
 	if root:
-		min_len = max_len
+		new_n = 0
+		for j in xrange(min_len,max_len+1):
+			new_n += min(10**j,n)
 
+		len_tr = (new_n - n) + int(n * 0.6)
+		len_val = int(n * 0.2)
+
+		min_len = max_len
+		lengths = [len_tr,len_val]
+		n = new_n
 	for j in xrange(min_len,max_len+1):
 		nums = []
 
@@ -48,7 +57,7 @@ def sum_series(n, min_len = 3, max_len = 20, max_digit = 9, plus_sign = True, ve
 		pairs += [pair_list]
 	if plus_sign:
 		extra_char = '+'
-	return pairs, '0123456789' + extra_char
+	return pairs, '0123456789' + extra_char, lengths
 
 def shuffle_dataset(sequence, label):
 	assert(len(sequence) == len(label))
@@ -57,7 +66,7 @@ def shuffle_dataset(sequence, label):
 	shuffle(indexes)
 	return [sequence[idx] for idx in indexes],[label[idx] for idx in indexes]
 
-def vectorize_sum_series(pairs, char_list, max_len = 40):
+def vectorize_sum_series(pairs, char_list, max_len = 40, lengths = []):
 
 	tr_s = []
 	tr_l = []
@@ -67,22 +76,31 @@ def vectorize_sum_series(pairs, char_list, max_len = 40):
 	test_l = []
 	char_list = [EOS,UNK] + list(char_list)
 
-	for pl in pairs:
-		len_tr = int(len(pl) * 0.6)
-		len_val = int(len(pl) * 0.2)
-		len_test = len(pl) - (len_tr + len_val)
-		for i in xrange(len_tr):
+	for pl in pairs[:-1]:
+		for i in xrange(len(pl)):
 			x,y = pl[i]
 			tr_s += [list(x)]
 			tr_l += [y]
-		for i in xrange(len_tr,len_tr+len_val):
-			x,y = pl[i]
-			val_s += [list(x)]
-			val_l += [y]
-		for i in xrange(len_tr+len_val,len(pl)):
-			x,y = pl[i]
-			test_s += [list(x)]
-			test_l += [y]
+
+	pl = pairs[-1]
+	if lengths != []:
+		[len_tr, len_val] = lengths
+	else:
+		len_tr = int(len(pl) * 0.6)
+		len_val = int(len(pl) * 0.2)
+
+	for i in xrange(len_tr):
+		x,y = pl[i]
+		tr_s += [list(x)]
+		tr_l += [y]
+	for i in xrange(len_tr,len_tr+len_val):
+		x,y = pl[i]
+		val_s += [list(x)]
+		val_l += [y]
+	for i in xrange(len_tr+len_val,len(pl)):
+		x,y = pl[i]
+		test_s += [list(x)]
+		test_l += [y]
 
 	tr_s, tr_l = shuffle_dataset(tr_s,tr_l)
 	val_s, val_l = shuffle_dataset(val_s,val_l)
@@ -99,13 +117,14 @@ def vectorize_sum_series(pairs, char_list, max_len = 40):
 
 	return X_tr, Y_tr, X_val, Y_val, X_test, Y_test, {'word_idx' : word_idx, 'idx_word' : idx_word} , [length_tr,length_val,length_test]
 
-def prepare_ss(args = {'n' : 100, 'max_len' : 20, 'plus_sign' : True}, root = None):
+def prepare_ss(args = {'n' : 100, 'min_len' : 2, 'max_len' : 20, 'plus_sign' : True}, root = None):
 	n = args['n']
+	min_len = args['min_len']
 	max_len = args['max_len']
 	plus_sign = args['plus_sign']
 
-	pairs, char_list = sum_series(n, max_len = max_len, plus_sign = plus_sign, root = root)
-	return vectorize_sum_series(pairs, char_list, max_len * 2 if plus_sign else max_len)
+	pairs, char_list, lengths = sum_series(n, min_len = min_len, max_len = max_len, plus_sign = plus_sign, root = 'root' == root)
+	return vectorize_sum_series(pairs, char_list, max_len * 2 if plus_sign else max_len, lengths = lengths)
 
 def open_file(fname):
 	try:
