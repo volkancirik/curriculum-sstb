@@ -3,13 +3,13 @@ import argparse
 def get_sa():
 	parser = argparse.ArgumentParser()
 
-	parser.add_argument('--batch-size', action='store', dest='batch_size',help='batch-size , default 64',type=int, default = 64)
+	parser.add_argument('--batch-size', action='store', dest='batch_size',help='batch-size , default 128',type=int, default = 128)
 
-	parser.add_argument('--epochs', action='store', dest='n_epochs',help='# of epochs, default = 500',type=int, default = 500)
+	parser.add_argument('--epochs', action='store', dest='n_epochs',help='# of epochs, default = 100',type=int, default = 100)
 
 	parser.add_argument('--dropout', action='store', dest='dropout',help='dropout rate, default = 0.50', type=float, default = 0.50)
 
-	parser.add_argument('--patience', action='store', dest='patience',help='# of epochs for patience, default = 20', type=int, default = 20)
+	parser.add_argument('--patience', action='store', dest='patience',help='# of epochs for patience, default = 10', type=int, default = 10)
 
 	parser.add_argument('--prefix', action='store', dest='prefix',help='exp log prefix to append exp/{} default = DUMMY', default = 'DUMMY')
 

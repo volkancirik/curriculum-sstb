@@ -66,7 +66,6 @@ def get_model(p, dicts, embedding_weights = None):
 	SEED = p.seed
 	RANDOMIZE = False
 	if SEED != 0:
-		random.seed(SEED)
 		RANDOMIZE = True
 
 	FOOTPRINT = 'U'+ p.unit + '_L' + str(LAYERS) + '_H' + str(HIDDEN_SIZE) + '_Dr' + str(DROPOUT) +  '_D' + DATASET  + '_SEED'+ str(SEED) + '_ROOT' + ROOT + '_REG' + p.regime + '.' + TIMESTAMP

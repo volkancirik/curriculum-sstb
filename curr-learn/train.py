@@ -16,12 +16,15 @@ from regime import vanilla, onepass_curr, curriculum
 train a sentiment analysis model based on lstm-family networks
 """
 
+
 parser = get_sa()
 p = parser.parse_args()
 
+SEED = p.seed
 EPOCH = p.n_epochs
 BATCH_SIZE = p.batch_size
 REGIME = p.regime
+random.seed(SEED)
 
 pd_args = { 'sa' : { 'prefix' : '../data/', 'train_f' : 'train_', 'val_f' : 'dev_root.txt', 'test_f' : 'test_root.txt'}, 'ss' : {'n' : 100, 'max_len' : 20, 'plus_sign' : True} }
 X_tr, Y_tr, X_val, Y_val, X_test, Y_test, dicts, [length_tr,_,_] = prepare_data(p.dataset, pd_args[p.dataset] , root = p.root, clip = 1)
@@ -49,6 +52,7 @@ regimes = {'vanilla' : vanilla, 'onepass' : onepass_curr, 'curriculum' : curricu
 train_history = regimes[REGIME]([b_X_tr, b_Y_tr, X_val, Y_val], model, EPOCH, RANDOMIZE, BATCH_SIZE, p.patience, NB, PREFIX, FOOTPRINT, p.dataset == 'sa')
 
 print('testing...')
+model.load_weights(PREFIX + FOOTPRINT + '.model')
 result = model.evaluate(X_test, Y_test, batch_size = BATCH_SIZE, verbose = 1, show_accuracy = True)
 
 pickle.dump({'train_history' : train_history, 'dicts' : dicts,'result' : result, 'X_test' : X_test, 'Y_test' : Y_test},open(PREFIX + FOOTPRINT + '.meta', 'w'))
