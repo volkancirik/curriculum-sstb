@@ -1,2 +1,5 @@
+data/*.txt
+embeddings/*.pkl
 init.sh
 *.pyc
+*test-*.py

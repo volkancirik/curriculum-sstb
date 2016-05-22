@@ -9,18 +9,16 @@ def find_bucket(bucket_length, value):
 		idx +=1
 	return idx
 
-def distribute_buckets(length, X_list, Y_list, step_size, x_set, y_set, verbose = False):
+def distribute_buckets(length, X_list, Y_list, step_size, x_set, y_set, verbose = False, skip_first = False):
 	bucket_length = range(np.min(length),np.max(length),step_size) + [np.max(length)]
-	bucket_length = bucket_length[1:]
+	if skip_first:
+		bucket_length = bucket_length[1:]
 
 	bucket_size = defaultdict(int)
 	diffs = defaultdict(list)
 	for l in length:
 		bucket_size[find_bucket(bucket_length,l)] += 1
 		diffs[find_bucket(bucket_length,l)] += [bucket_length[find_bucket(bucket_length,l)] - l]
-	if verbose:
-		for key in diffs:
-			print >> sys.stderr, bucket_length[key],"-->",diffs[key]
 
 	bucket_x = []
 	bucket_y = []
@@ -66,7 +64,8 @@ def distribute_buckets(length, X_list, Y_list, step_size, x_set, y_set, verbose 
 		for i in xrange(len(bucket_length)):
 			print >> sys.stderr, bucket_size[i], bucket_count[i]
 
-	print >> sys.stderr, " ".join([ str(key)+'_'+str(bucket_count[key])+'_'+str(bucket_length[key]) for key in bucket_count ])
+	print >> sys.stderr, "buckets info (id,#of instance,length):"
+	print >> sys.stderr, " ".join(['(' + str(key)+','+str(bucket_count[key])+','+str(bucket_length[key]) + ')' for key in bucket_count ])
 	print >> sys.stderr, "%d buckets are created from %d to %d with step-size %d" % (len(bucket_length),bucket_length[0],bucket_length[-1],step_size)
 
 	return bucket_x, bucket_y

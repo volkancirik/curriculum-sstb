@@ -13,22 +13,23 @@ def get_sa():
 
 	parser.add_argument('--prefix', action='store', dest='prefix',help='exp log prefix to append exp/{} default = DUMMY', default = 'DUMMY')
 
+	parser.add_argument('--dataset', action='store', dest='dataset',help='dataset sa (sentiment analysis) or ss (sembolic summation) default = "sa" ', default = 'sa')
+
 	parser.add_argument('--unit', action='store', dest='unit',help='train with {gru lstm base_soft pp kernel maxout} units,default = lstm', default = 'lstm')
 
 	parser.add_argument('--hidden', action='store', dest='n_hidden',help='hidden size of softmax layer, default = 256', type=int, default = 256)
 
 	parser.add_argument('--layers', action='store', dest='layers',help='# of RNN layers, default = 1', type=int, default = 1)
 
-	parser.add_argument('--use-sentence', action='store_true', dest='sentence',help='use sentences(or flatten dataset), default : false')
+	parser.add_argument('--root', action='store', dest='root',help='use phrases(all) or only roots(root) for sentiment analysis, default : all)', default = 'all')
+
+	parser.add_argument('--regime', action='store', dest='regime',help='training regime vanilla|onepass|curriculum default : vanilla)', default = 'vanilla')
 
 	parser.add_argument('--seed', action='store', dest='seed',help='random seed, if seed = 0, do not randomize, default = 0',type = int, default = 0)
 
-	parser.add_argument('--pretrained', action='store', dest='pretrained',help='{embeddings/{word2vec|glove}.pkl} use pretrained word embeddings default:"../embeddings/glove6B-100.pkl " ', default = '../embeddings/glove6B-100.pkl')
-
-	parser.set_defaults(sentence = False)
+	parser.add_argument('--pretrained', action='store', dest='pretrained',help=' use pretrained word embeddings default:"../embeddings/glove.840B.300d.filtered.pkl" ', default = '../embeddings/glove.840B.300d.filtered.pkl')
 
 	return parser
-
 
 def get_sa_test():
 	parser = argparse.ArgumentParser()
@@ -37,22 +38,19 @@ def get_sa_test():
 
 	return parser
 
-def get_embeddings(word_idx, idx_word, wvec = 'embeddings/word2vec.pkl', UNK_vmap = '*UNKNOWN*', expand_vocab = False, filtered = False):
+def get_embeddings(word_idx, idx_word, wvec = '', UNK_vmap = '*UNKNOWN*', expand_vocab = False, filtered = False):
 	import gzip, sys
 	import cPickle as pickle
 	import numpy as np
 
-
 	try:
-		print >> sys.stderr, "loading word vectors..."
+		print >> sys.stderr, "loading word vectors %s..." % (wvec)
 		v_map = pickle.load(gzip.open(wvec, "rb"))
 		dim = len(list(v_map[UNK_vmap]))
 		print >> sys.stderr, "%d dim word vectors are loaded.." % (dim)
 	except:
 		print >> sys.stderr, "word embedding file %s cannot be read." % (wvec)
 		quit(1)
-
-	print >> sys.stderr, "data vocab size %d vmap vocab size %d" % (len(word_idx),len(v_map))
 
 	V_text = len(word_idx)
 

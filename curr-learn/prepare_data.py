@@ -10,15 +10,19 @@ THRESHOLD = 2
 EOS = '</s>'
 
 
-def sum_series(n, min_len = 3, max_len = 20, max_digit = 9, plus_sign = True):
+def sum_series(n, min_len = 3, max_len = 20, max_digit = 9, plus_sign = True, verbose = True, root = False):
 
 	pairs = []
 	seen = set()
+	if root:
+		min_len = max_len
+
 	for j in xrange(min_len,max_len+1):
 		nums = []
 
 		i = 0
-		print >> sys.stderr, "starting length %d, there will be %d instances..." % (j,min(10**j,n))
+		if verbose:
+			print >> sys.stderr, "starting length %d, there will be %d instances..." % (j,min(10**j,n))
 		while i < min(10**j,n):
 			serie = []
 			for k in xrange(j):
@@ -92,20 +96,15 @@ def vectorize_sum_series(pairs, char_list, max_len = 40):
 	X_test, Y_test, length_test = vectorize_flat(test_s, test_l, word_idx, max_len, regression = True)
 
 	index = 0
-	print
-	print tr_s[index]
-	print tr_l[index]
-	print X_tr[index]
-	print
 
 	return X_tr, Y_tr, X_val, Y_val, X_test, Y_test, {'word_idx' : word_idx, 'idx_word' : idx_word} , [length_tr,length_val,length_test]
 
-def prepare_ss(args = {'n' : 100, 'max_len' : 20, 'plus_sign' : True}):
+def prepare_ss(args = {'n' : 100, 'max_len' : 20, 'plus_sign' : True}, root = None):
 	n = args['n']
 	max_len = args['max_len']
 	plus_sign = args['plus_sign']
 
-	pairs, char_list = sum_series(n, max_len = max_len, plus_sign = plus_sign)
+	pairs, char_list = sum_series(n, max_len = max_len, plus_sign = plus_sign, root = root)
 	return vectorize_sum_series(pairs, char_list, max_len * 2 if plus_sign else max_len)
 
 def open_file(fname):
@@ -136,11 +135,8 @@ def vectorize(data, word_idx, max_len, embedding = True):
 
 
 def get_flat(fname, lower = True, min_len = 2):
-	try:
-		f = open(fname)
-	except:
-		print >> sys.stderr, "cannot open file %s" % (fname)
-		quit(0)
+	f = open_file(fname)
+
 	S = []
 	L = []
 	max_len = 0
@@ -157,6 +153,7 @@ def get_flat(fname, lower = True, min_len = 2):
 		S += [s]
 		L += [label]
 		max_len = max_len if max_len >= len(S[-1]) else len(S[-1])
+
 	return S, L, max_len+1
 
 def get_vocabs(data):
@@ -207,9 +204,9 @@ def vectorize_flat(sentences,labels, word_idx, max_len, regression = False):
 		length += [len(s) + 1]
 	return X,Y, length
 
-def prepare_sa(args = { 'prefix' : '../data/', 'train_f' : 'train_all.txt', 'val_f' : 'dev_root.txt', 'test_f' : 'test_root.txt'} ):
+def prepare_sa(args = { 'prefix' : '../data/', 'train_f' : 'train_', 'val_f' : 'dev_root.txt', 'test_f' : 'test_root.txt'}, root = 'all' ):
 	prefix = args['prefix']
-	train_f = args['train_f']
+	train_f = args['train_f'] + root + '.txt'
 	val_f = args['val_f']
 	test_f = args['test_f']
 
@@ -231,10 +228,9 @@ def prepare_sa_test(word_idx,prefix = '../data/', test_f = 'test_root.txt'):
 
 	return X_test, Y_test
 
-
-def prepare_data(dataset_id, args, clip = 1):
+def prepare_data(dataset_id, args , root = 'all', clip = 1):
 	datasets = { 'sa' : prepare_sa, 'ss' : prepare_ss}
-	X_tr, Y_tr, X_val, Y_val, X_test, Y_test, dicts , [length_tr,length_val,length_test] = datasets[dataset_id](args = args)
+	X_tr, Y_tr, X_val, Y_val, X_test, Y_test, dicts , [length_tr,length_val,length_test] = datasets[dataset_id](args = args, root = root)
 	n_tr = int(len(X_tr) * clip)
 
 	return X_tr[:n_tr], Y_tr[:n_tr], X_val, Y_val, X_test, Y_test, dicts , [length_tr[:n_tr],length_val,length_test]
