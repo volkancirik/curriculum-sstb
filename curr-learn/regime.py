@@ -31,7 +31,7 @@ def onepass_curr(data, model, EPOCH, RANDOMIZE, BATCH_SIZE, PATIENCE, NB, PREFIX
 			if ACCURACY:
 				train_history['val_acc'] += [vl[1]]
 
-			print("VAL {} best VAL {} no improvement in {}".format(train_history[criteron][-1],best_val,pat))
+			print("VAL {:10.4f} best VAL {:10.4f} no improvement in {}".format(train_history[criteron][-1],best_val,pat))
 
 			if (train_history[criteron][-1] <= best_val and ACCURACY) or (train_history[criteron][-1] >= best_val and ACCURACY == False):
 				pat += 1
@@ -81,7 +81,7 @@ def curriculum(data, model, EPOCH, RANDOMIZE, BATCH_SIZE, PATIENCE, NB, PREFIX, 
 			if ACCURACY:
 				train_history['val_acc'] += [vl[1]]
 
-			print("VAL {} best VAL {} no improvement in {}".format(train_history[criteron][-1],best_val,pat))
+			print("VAL {:10.4f} best VAL {:10.4f} no improvement in {}".format(train_history[criteron][-1],best_val,pat))
 
 			if (train_history[criteron][-1] <= best_val and ACCURACY) or (train_history[criteron][-1] >= best_val and ACCURACY == False):
 				pat += 1
@@ -134,7 +134,7 @@ def vanilla(data, model, EPOCH, RANDOMIZE, BATCH_SIZE, PATIENCE, NB, PREFIX, FOO
 		if ACCURACY:
 			train_history['val_acc'] += [vl[1]]
 
-		print("VAL {} best VAL {} no improvement in {}".format(train_history[criteron][-1],best_val,pat))
+		print("VAL {:10.4f} best VAL {:10.4f} no improvement in {}".format(train_history[criteron][-1],best_val,pat))
 
 		if (train_history[criteron][-1] <= best_val and ACCURACY) or (train_history[criteron][-1] >= best_val and ACCURACY == False):
 			pat += 1
