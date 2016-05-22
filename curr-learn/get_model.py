@@ -20,7 +20,7 @@ def dan(model, RNN, LAYERS, EMB_HIDDEN_SIZE, HIDDEN_SIZE, weight_decay, DROPOUT)
 	from keras.layers.averagelayer import Average
 	model.add(Average())
 	for layer in xrange(LAYERS):
-		model.add(Dense(1, activation = 'relu', W_regularizer = l1l2(l1 = 0.0001, l2 = 0.0001)))
+		model.add(Dense(HIDDEN_SIZE, activation = 'relu', W_regularizer = l1l2(l1 = 0.0001, l2 = 0.0001)))
 		model.add(Dropout(DROPOUT))
 	return model
 

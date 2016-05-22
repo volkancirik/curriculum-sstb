@@ -23,13 +23,15 @@ else:
 model, PREFIX, FOOTPRINT, RANDOMIZE = get_model(p, dicts, embedding_weights = embedding_weights)
 BASE_N_PARAMETER = model.get_n_params()
 print "%d parameters for model: --unit %s --hidden %d --layers %d" % (BASE_N_PARAMETER - FIXED, p.unit, p.n_hidden, p.layers)
+#p.layers = BATCH_SIZE for different layer sizes
 prec = 0.0002
-for unit in ['gru','bigru']:
+for unit in ['gru', 'dan']:
  	p.unit = unit
  	model, PREFIX, FOOTPRINT, RANDOMIZE = get_model(p, dicts, embedding_weights = embedding_weights)
 
 	h_min = 0
-	h_max = 1024
+	h_max = 120
+
 	HIDDEN_SIZE = 0
 	p.n_hidden  = HIDDEN_SIZE
 	m_param = 0
