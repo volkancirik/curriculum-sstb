@@ -39,10 +39,10 @@ def bi_dir(model, RNN, LAYERS, EMB_HIDDEN_SIZE, HIDDEN_SIZE, weight_decay, DROPO
 	model.add(RNN(EMB_HIDDEN_SIZE, output_dim = HIDDEN_SIZE * 2, W_regularizer=l2(weight_decay), U_regularizer=l2(weight_decay), b_regularizer=l2(weight_decay), dropout = DROPOUT ,return_sequences = (LAYERS >= 2)))
 
 	for layer in xrange(LAYERS-2):
-		model.add(RNN(HIDDEN_SIZE, output_dim = HIDDEN_SIZE * 2, W_regularizer=l2(weight_decay), U_regularizer=l2(weight_decay), b_regularizer=l2(weight_decay), dropout = DROPOUT, return_sequences = True))
+		model.add(RNN(HIDDEN_SIZE*2 , output_dim = HIDDEN_SIZE * 2, W_regularizer=l2(weight_decay), U_regularizer=l2(weight_decay), b_regularizer=l2(weight_decay), dropout = DROPOUT, return_sequences = True))
 
 	if LAYERS >= 2:
-		model.add(RNN(HIDDEN_SIZE, output_dim = HIDDEN_SIZE * 2, W_regularizer=l2(weight_decay), U_regularizer=l2(weight_decay), b_regularizer=l2(weight_decay), dropout = DROPOUT ,return_sequences = False))
+		model.add(RNN(HIDDEN_SIZE*2, output_dim = HIDDEN_SIZE * 2, W_regularizer=l2(weight_decay), U_regularizer=l2(weight_decay), b_regularizer=l2(weight_decay), dropout = DROPOUT ,return_sequences = False))
 
 	return model
 
