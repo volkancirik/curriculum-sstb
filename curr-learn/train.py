@@ -27,7 +27,7 @@ REGIME = p.regime
 random.seed(SEED)
 
 pd_args = { 'sa' : { 'prefix' : '../data/', 'train_f' : 'train_', 'val_f' : 'dev_root.txt', 'test_f' : 'test_root.txt'}, 'ss' : {'n' : 1024, 'min_len' : 2, 'max_len' : 20, 'plus_sign' : True} }
-X_tr, Y_tr, X_val, Y_val, X_test, Y_test, dicts, [length_tr,_,_] = prepare_data(p.dataset, pd_args[p.dataset] , root = p.root, clip = 1)
+X_tr, Y_tr, X_val, Y_val, X_test, Y_test, dicts, [length_tr,_,_] = prepare_data(p.dataset, pd_args[p.dataset] , root = p.root, clip = p.clip)
 
 b_X_tr, b_Y_tr = distribute_buckets(length_tr, [X_tr], [Y_tr], step_size = 1, x_set = set([0]), y_set = set())
 
