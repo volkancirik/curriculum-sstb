@@ -27,6 +27,8 @@ def get_sa():
 
 	parser.add_argument('--seed', action='store', dest='seed',help='random seed, if seed = 0, do not randomize, default = 0',type = int, default = 0)
 
+	parser.add_argument('--clip', action='store', dest='clip',help='clip the training data size default = 1',type = float, default = 1)
+
 	parser.add_argument('--pretrained', action='store', dest='pretrained',help=' use pretrained word embeddings default:"../embeddings/glove.840B.300d.filtered.pkl" ', default = '../embeddings/glove.840B.300d.filtered.pkl')
 
 	return parser
