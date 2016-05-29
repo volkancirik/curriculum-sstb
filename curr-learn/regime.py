@@ -1,3 +1,5 @@
+import random
+
 def onepass_curr(data, model, EPOCH, RANDOMIZE, BATCH_SIZE, PATIENCE, NB, PREFIX, FOOTPRINT, ACCURACY):
 	train_history = {'loss' : [], 'val_loss' : [], 'acc' : [], 'val_acc' : []}
 
@@ -22,11 +24,11 @@ def onepass_curr(data, model, EPOCH, RANDOMIZE, BATCH_SIZE, PATIENCE, NB, PREFIX
 
 			print('iteration {}/{} bucket {}/{}'.format(iteration+1,EPOCH, b_idx+1,NB))
 
-			eh = model.fit(X_train, Y_train, batch_size = BATCH_SIZE, nb_epoch = 1)
+			eh = model.fit(X_train, Y_train, batch_size = BATCH_SIZE, nb_epoch = 1, verbose = False)
 			for key in ['loss']:
 				train_history[key][-1] += eh.history[key][0]
 
-			vl = model.evaluate(X_val,Y_val, batch_size = BATCH_SIZE, verbose = True, show_accuracy = ACCURACY)
+			vl = model.evaluate(X_val,Y_val, batch_size = BATCH_SIZE, verbose = False, show_accuracy = ACCURACY)
 			train_history['val_loss'] += [vl]
 			if ACCURACY:
 				train_history['val_acc'] += [vl[1]]
@@ -72,11 +74,11 @@ def curriculum(data, model, EPOCH, RANDOMIZE, BATCH_SIZE, PATIENCE, NB, PREFIX, 
 
 				print('iteration {}/{} bucket {}/{}'.format(iteration+1,EPOCH, j+1,NB))
 
-				eh = model.fit(X_train, Y_train, batch_size = BATCH_SIZE, nb_epoch = 1)
+				eh = model.fit(X_train, Y_train, batch_size = BATCH_SIZE, nb_epoch = 1, verbose = False)
 				for key in ['loss']:
 					train_history[key][-1] += eh.history[key][0]
 
-			vl = model.evaluate(X_val,Y_val, batch_size = BATCH_SIZE, verbose = True, show_accuracy = ACCURACY)
+			vl = model.evaluate(X_val,Y_val, batch_size = BATCH_SIZE, verbose = False, show_accuracy = ACCURACY)
 			train_history['val_loss'] += [vl]
 			if ACCURACY:
 				train_history['val_acc'] += [vl[1]]
@@ -125,11 +127,11 @@ def vanilla(data, model, EPOCH, RANDOMIZE, BATCH_SIZE, PATIENCE, NB, PREFIX, FOO
 
 			print('iteration {}/{} bucket {}/{}'.format(iteration+1,EPOCH, j+1,NB))
 
-			eh = model.fit(X_train, Y_train, batch_size = BATCH_SIZE, nb_epoch = 1)
+			eh = model.fit(X_train, Y_train, batch_size = BATCH_SIZE, nb_epoch = 1, verbose = False)
 			for key in ['loss']:
 				train_history[key][-1] += eh.history[key][0]
 
-		vl = model.evaluate(X_val,Y_val, batch_size = BATCH_SIZE, verbose = True, show_accuracy = ACCURACY)
+		vl = model.evaluate(X_val,Y_val, batch_size = BATCH_SIZE, verbose = False, show_accuracy = ACCURACY)
 		train_history['val_loss'] += [vl]
 		if ACCURACY:
 			train_history['val_acc'] += [vl[1]]
