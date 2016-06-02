@@ -163,7 +163,7 @@ def test_sa(model, X_test,Y_test, length_test):
 		print key, polarity_cor[key] / polarity_n[key] 
 	print '___'
 	print count, correct, correct/count
-	return {'length_cor' : length_cor, 'polarity_cor' : polarity_cor}
+	return {'length_cor' : length_cor, 'polarity_cor' : polarity_cor, 'length_n' : length_n, 'polarity_n' : polarity_n, 'accuracy' : correct/count }
 
 if __name__ == '__main__':
 
