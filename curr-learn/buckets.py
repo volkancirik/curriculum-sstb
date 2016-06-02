@@ -44,12 +44,21 @@ def distribute_buckets(length, X_list, Y_list, step_size, x_set, y_set, verbose 
 			new_y += [y_new]
 		bucket_y += [new_y]
 
-	max_len = np.max(length)
+
 	for i in xrange(len(length)):
 		idx = find_bucket(bucket_length, length[i])
 		for j,x_orig in enumerate(X_list):
 			if j in x_set:
-				bucket_x[idx][j][ bucket_count[idx], bucket_length[idx] - length[i]: ] = x_orig[i, max_len - length[i]:] ## remember padding left
+				max_len = max(np.max(length), x_orig.shape[1])
+				try:
+					bucket_x[idx][j][ bucket_count[idx], bucket_length[idx] - length[i]: ] = x_orig[i, max_len - length[i]:] ## remember padding left
+				except:
+					print i,length[i], idx, bucket_length[idx], max_len
+					print bucket_x[idx][j].shape
+					print x_orig[i,:].shape
+					print x_orig[i,:].shape
+					print x_orig[i, max_len - length[i]:]
+					quit(0)
 			else:
 				bucket_x[idx][j][ bucket_count[idx]] = x_orig[i]
 

@@ -10,7 +10,7 @@ THRESHOLD = 2
 EOS = '</s>'
 
 
-def sum_series(n, min_len = 2, max_len = 20, max_digit = 9, plus_sign = True, verbose = True, root = False):
+def sum_series(n, min_len = 2, max_len = 20, max_digit = 9, plus_sign = True, verbose = False, root = False):
 
 	pairs = []
 	seen = set()
@@ -55,6 +55,7 @@ def sum_series(n, min_len = 2, max_len = 20, max_digit = 9, plus_sign = True, ve
 
 			pair_list += [(x, reduce(lambda a,b : a+b,serie))]
 		pairs += [pair_list]
+	extra_char = ''
 	if plus_sign:
 		extra_char = '+'
 	return pairs, '0123456789' + extra_char, lengths
@@ -109,9 +110,9 @@ def vectorize_sum_series(pairs, char_list, max_len = 40, lengths = []):
 	word_idx = dict((c, i+1) for i, c in enumerate(char_list))
 	idx_word = dict((i+1, c) for i, c in enumerate(char_list))
 
-	X_tr, Y_tr, length_tr = vectorize_flat(tr_s, tr_l, word_idx, max_len, regression = True)
-	X_val, Y_val, length_val = vectorize_flat(val_s, val_l, word_idx, max_len, regression = True)
-	X_test, Y_test, length_test = vectorize_flat(test_s, test_l, word_idx, max_len, regression = True)
+	X_tr, Y_tr, length_tr = vectorize_flat(tr_s, tr_l, word_idx, max_len, regression = True, eos = False)
+	X_val, Y_val, length_val = vectorize_flat(val_s, val_l, word_idx, max_len, regression = True, eos = False)
+	X_test, Y_test, length_test = vectorize_flat(test_s, test_l, word_idx, max_len, regression = True, eos = False)
 
 	index = 0
 
@@ -124,7 +125,25 @@ def prepare_ss(args = {'n' : 100, 'min_len' : 2, 'max_len' : 20, 'plus_sign' : T
 	plus_sign = args['plus_sign']
 
 	pairs, char_list, lengths = sum_series(n, min_len = min_len, max_len = max_len, plus_sign = plus_sign, root = 'root' == root)
-	return vectorize_sum_series(pairs, char_list, max_len * 2 if plus_sign else max_len, lengths = lengths)
+	return vectorize_sum_series(pairs, char_list, max_len * 2  if plus_sign else max_len, lengths = lengths)
+
+def prepare_ss_test(dicts, args = {'n' : 100, 'min_len' : 2, 'max_len' : 20, 'plus_sign' : True}):
+	n = args['n']
+	min_len = args['min_len']
+	max_len = args['max_len']
+	plus_sign = args['plus_sign']
+
+	pairs, _ , _ = sum_series(n, min_len = max_len, max_len = max_len, plus_sign = plus_sign, root = 'root')
+	test_s = []
+	test_l = []
+	for pl in pairs:
+		for i in xrange(len(pl)):
+			x,y = pl[i]
+			test_s += [list(x)]
+			test_l += [y]
+
+	X_test, Y_test, length_test = vectorize_flat(test_s, test_l, dicts['word_idx'], max_len, regression = True, eos = False)
+	return X_test, Y_test
 
 def open_file(fname):
 	try:
@@ -201,8 +220,9 @@ def get_vocabs(data):
 	word_idx['*dummy*'] = 0
 	return word_idx, idx_word
 
-def vectorize_flat(sentences,labels, word_idx, max_len, regression = False):
+def vectorize_flat(sentences,labels, word_idx, max_len, regression = False, eos = True):
 
+#	print >> sys.stderr, "EOS is",eos
 	N = len(sentences)
 	if regression:
 		Y = np.zeros((N), dtype=np.int)
@@ -212,15 +232,20 @@ def vectorize_flat(sentences,labels, word_idx, max_len, regression = False):
 
 	length = []
 	for i,(s,l) in enumerate(zip(sentences,labels)):
-		pad = max_len - len(s) - 1 # for EOS
-		for j,tok in enumerate(s+[EOS]):
+		if eos:
+			pad = max_len - len(s) - 1 # for EOS
+			seq = s+[EOS]
+		else:
+			pad = max_len - len(s)
+			seq = s
+		for j,tok in enumerate(seq):
 			idx = word_idx.get(tok, word_idx[UNK])
 			X[i,pad + j] = idx
 		if regression:
 			Y[i] = l
 		else:
 			Y[i, l] = 1
-		length += [len(s) + 1]
+		length += [len(seq)]
 	return X,Y, length
 
 def prepare_sa(args = { 'prefix' : '../data/', 'train_f' : 'train_', 'val_f' : 'dev_root.txt', 'test_f' : 'test_root.txt'}, root = 'all' ):
@@ -243,9 +268,9 @@ def prepare_sa(args = { 'prefix' : '../data/', 'train_f' : 'train_', 'val_f' : '
 def prepare_sa_test(word_idx,prefix = '../data/', test_f = 'test_root.txt'):
 
 	test_s, test_l, max_len_test = get_flat(prefix + test_f)
-	X_test, Y_test, length_test = vectorize_flat(test_s, test_l, word_idx, max_len_test)
+	X_test, Y_test, length_test = vectorize_flat(test_s, test_l, word_idx, max_len_test, eos = True)
 
-	return X_test, Y_test
+	return X_test, Y_test, length_test
 
 def prepare_data(dataset_id, args , root = 'all', clip = 1):
 	datasets = { 'sa' : prepare_sa, 'ss' : prepare_ss}
@@ -254,5 +279,20 @@ def prepare_data(dataset_id, args , root = 'all', clip = 1):
 
 	return X_tr[:n_tr], Y_tr[:n_tr], X_val, Y_val, X_test, Y_test, dicts , [length_tr[:n_tr],length_val,length_test]
 
+def prepare_test(dataset_id, dicts, args , root = 'all', clip = 1):
+	datasets = { 'sa' : prepare_sa_test, 'ss' : prepare_ss_test}
+	X_test, Y_test = datasets[dataset_id](dicts, args = args)
+	return X_test, Y_test
+
 if __name__ == '__main__':
-	prepare_sa()
+	from buckets import distribute_buckets
+	dataset = 'sa'
+	root = 'all'
+	clip = 1
+	pd_args = { 'sa' : { 'prefix' : '../data/', 'train_f' : 'train_', 'val_f' : 'dev_root.txt', 'test_f' : 'test_root.txt'}, 'ss' : {'n' : 100, 'min_len' : 2, 'max_len' : 20, 'plus_sign' : False} }
+
+	X_tr, Y_tr, X_val, Y_val, X_test, Y_test, dicts, [length_tr,_,_] = prepare_data(dataset, pd_args[dataset] , root = root, clip = clip)
+	print(X_tr.shape, Y_tr.shape)
+	b_X_tr, b_Y_tr = distribute_buckets(length_tr, [X_tr], [Y_tr], step_size = 1, x_set = set([0]), y_set = set())
+	for b in b_X_tr:
+		print b[0].shape
